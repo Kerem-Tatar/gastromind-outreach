@@ -9,7 +9,7 @@ Proje şartnamesi: [`CLAUDE.md`](CLAUDE.md).
 | Faz | Kapsam | Durum |
 |---|---|---|
 | 1 | Backend çekirdeği (modeller, admin API, çıkma linki, Resend webhook, CSV, testler) | ✅ |
-| 2 | Admin paneli (Next.js) | ⏳ |
+| 2 | Admin paneli (Next.js, `panel/`) | ✅ |
 | 3 | Google Places ile lead bulma | ⏳ |
 | 4 | AI ile kişiselleştirme | ⏳ |
 | 5 | Takip otomasyonu (GitHub Actions, Cal.com) | ⏳ |
@@ -54,7 +54,47 @@ src/
   jobs/        (Faz 5)
 data/tr-locations.json   81 il / 973 ilçe (kaynak dosyanın başında)
 tests/                   Vitest + mongodb-memory-server
+panel/                   Admin paneli (Next.js 16 App Router + Tailwind 4)
 ```
+
+## Admin paneli (`panel/`)
+
+Next.js (App Router) + Tailwind. Tek kullanıcı: parola ile giriş, imzalı **httpOnly** oturum cookie'si (7 gün).
+
+**Güvenlik modeli:** Tarayıcı backend'e doğrudan bağlanmaz. Panel `/api/*` isteklerini sunucu tarafında oturumu doğrulayıp `ADMIN_API_KEY` ile backend'e iletir; API anahtarı tarayıcıya hiç gitmez. Veri değiştiren isteklerde `Origin` kontrolü (CSRF) yapılır. Render uykudaysa ilk istek ~1 dk sürebilir (70 sn zaman aşımı, okuma isteklerinde 1 yeniden deneme).
+
+| Sayfa | İçerik |
+|---|---|
+| Huni | Aşamalara göre kanban (sürükle-bırak), il/ilçe/kategori filtresi, mesaj durumu özeti |
+| İşletmeler | Tablo, arama, il/ilçe/kategori/aşama filtresi, sayfalama, CSV içe aktarma, yeni işletme |
+| İşletme detay | Bilgiler (düzenlenebilir), zaman çizelgesi, not/telefon/görüşme ekleme, aşama değiştirme, kampanyadan taslak oluşturma, silme |
+| Onay kuyruğu | Solda taslak düzenleme, sağda footer ve başlıklar dahil gerçek mail önizlemesi; onayla/reddet, seçerek toplu onay; onaylılar sekmesinde tek tek veya toplu gönderim |
+| Kampanyalar | Hedef (il/ilçe/kategori), şablon editörü, değişken ekleme butonları, gerçek işletme verisiyle canlı önizleme, bilinmeyen değişken uyarısı, taslak üretme |
+| Ayarlar | Günlük limit, gönderim saatleri, hatırlatma ayarları, gönderen bilgileri, randevu linki; ret listesi görüntüleme, elle ekleme ve İYS CSV içe aktarma |
+
+### Kurulum
+
+```bash
+cd panel
+npm install
+cp .env.example .env.local
+npm run hash-password -- "guclu-bir-parola"   # çıktıyı PANEL_PASSWORD_HASH'e yaz
+npm run dev                                    # http://localhost:3000 (backend 4000'de çalışıyor olmalı)
+npm test                                       # oturum/parola/CSRF testleri
+```
+
+| Değişken | Açıklama |
+|---|---|
+| `BACKEND_URL` | Backend adresi (yerelde `http://localhost:4000`, canlıda Render adresi) |
+| `ADMIN_API_KEY` | Backend'dekiyle aynı değer |
+| `PANEL_PASSWORD_HASH` | `npm run hash-password` çıktısı (scrypt) |
+| `SESSION_SECRET` | En az 32 karakter rastgele değer |
+
+### Vercel'e deploy
+
+1. Vercel'de yeni proje → bu repo → **Root Directory: `panel`** (framework Next.js olarak algılanır).
+2. Environment Variables: yukarıdaki dört değişken (`BACKEND_URL` = Render adresi).
+3. Deploy. Panel `noindex` başlığıyla yayınlanır.
 
 ## Değişmez kurallar
 
