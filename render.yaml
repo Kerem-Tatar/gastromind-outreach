@@ -1,0 +1,40 @@
+# Render Blueprint: Render panelinde "New → Blueprint" ile bu repo seçilince servis otomatik kurulur.
+# Gizli değerler (sync: false) kurulum sırasında Render panelinde girilir, repoya yazılmaz.
+services:
+  - type: web
+    name: gastromind-outreach-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_API_KEY
+        generateValue: true
+      - key: APP_BASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_WEBHOOK_SECRET
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Gastromind
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_REPLY_TO
+        sync: false
+      - key: SENDER_FULL_NAME
+        sync: false
+      - key: SENDER_PHONE
+        sync: false
+      - key: SENDER_ADDRESS
+        sync: false
+      - key: BOOKING_URL
+        sync: false
+      - key: JOB_SECRET
+        generateValue: true

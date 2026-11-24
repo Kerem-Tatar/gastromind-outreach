@@ -167,3 +167,12 @@ describe('Resend webhook', () => {
     expect(await isSuppressed('a@b.com')).toBe(false);
   });
 });
+
+describe('sağlık kontrolü', () => {
+  it('/health veritabanı bağlantısını raporlar', async () => {
+    const { app } = setup();
+    const res = await request(app).get('/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true, db: 'connected' });
+  });
+});

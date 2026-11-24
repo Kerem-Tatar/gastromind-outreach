@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { requireApiKey } from './middleware/apiKey.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { adminRouter } from './routes/admin.js';
@@ -15,7 +16,11 @@ export function createApp(deps = {}) {
   app.use('/webhooks', webhooksRouter());
   app.use('/unsubscribe', unsubscribeRouter());
 
-  app.get('/health', (req, res) => res.json({ ok: true }));
+  // Render sağlık kontrolü ve deploy sonrası hızlı doğrulama için. İç detay (adres vb.) içermez.
+  app.get('/health', (req, res) => {
+    const db = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    res.status(db === 'connected' ? 200 : 503).json({ ok: db === 'connected', db });
+  });
 
   app.use('/api', requireApiKey,
     express.json({ limit: '1mb' }),
