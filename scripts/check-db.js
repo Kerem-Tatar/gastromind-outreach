@@ -38,7 +38,10 @@ main().catch(async (err) => {
   const msg = redact(err?.message ?? String(err));
   console.error('✗ Bağlantı başarısız:', msg);
   if (/auth|Authentication/i.test(msg)) console.error('  → Kullanıcı adı/şifre hatalı olabilir (şifrede özel karakter varsa URL-encode edilmeli).');
-  if (/ENOTFOUND|querySrv/i.test(msg)) console.error('  → Sunucu adı bulunamadı; bağlantı adresini kontrol edin.');
+  if (/ENOTFOUND|querySrv/i.test(msg)) {
+    console.error('  → Sunucu adı çözülemedi. Adresi kontrol edin; adres doğruysa bu makinenin DNS\'i SRV kayıtlarını');
+    console.error('    çözemiyor olabilir (ör. Claude Code bulut oturumları). Bu durumda testi kendi bilgisayarınızda veya Render\'da çalıştırın.');
+  }
   if (/timed out|Server selection|ECONNREFUSED|whitelist|IP/i.test(msg)) console.error('  → Atlas > Network Access\'te bu makinenin IP\'sine izin verilmemiş olabilir.');
   await mongoose.disconnect().catch(() => {});
   process.exit(1);
