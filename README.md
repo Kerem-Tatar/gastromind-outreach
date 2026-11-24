@@ -31,7 +31,7 @@ npm test
 
 | Değişken | Açıklama |
 |---|---|
-| `MONGODB_URI` | MongoDB Atlas bağlantısı (Gastromind'dan **ayrı** veritabanı) |
+| `MONGODB_URI` | MongoDB Atlas bağlantısı (Gastromind'dan **ayrı** veritabanı). Adreste veritabanı adı yoksa `gastromind-outreach` kullanılır |
 | `ADMIN_API_KEY` | Admin API anahtarı (`x-api-key` başlığı). Üretmek için: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `APP_BASE_URL` | Backend'in herkese açık adresi; çıkma linkleri bununla üretilir |
 | `RESEND_API_KEY` | Resend API anahtarı |

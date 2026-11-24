@@ -3,6 +3,7 @@
 import mongoose from 'mongoose';
 import { loadEnvFile, env } from '../src/config/env.js';
 import { redact } from '../src/config/logger.js';
+import { mongoConnectOptions } from '../src/config/db.js';
 
 loadEnvFile();
 
@@ -13,13 +14,13 @@ async function main() {
     process.exit(1);
   }
   const started = Date.now();
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 15000 });
+  await mongoose.connect(uri, mongoConnectOptions(uri));
   const db = mongoose.connection.db;
   const { version } = await db.admin().command({ buildInfo: 1 });
   await db.command({ ping: 1 });
   console.log(`✓ Bağlandı (${Date.now() - started} ms)`);
   console.log(`  Sunucu: ${mongoose.connection.host}`);
-  console.log(`  Veritabanı: ${db.databaseName}${db.databaseName === 'test' ? '  ← adreste veritabanı adı yok; varsayılan "test" kullanılıyor' : ''}`);
+  console.log(`  Veritabanı: ${db.databaseName}`);
   console.log(`  MongoDB sürümü: ${version}`);
 
   // Yazma/okuma/silme yetkisi kontrolü (geçici bir kayıtla).
