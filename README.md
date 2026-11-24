@@ -193,6 +193,8 @@ Gönderim saatleri dışında deniyorsan önce `PATCH /api/settings` ile `{"send
 
 ### Anahtar gelince doğrulama
 
+- **MongoDB:** `npm run check:db` — bağlanır, ping atar, geçici bir kayıtla yazma/okuma/silme yetkisini dener. Bağlantı adresini yazdırmaz.
+
 - **Resend:** `.env`'e `RESEND_API_KEY` ve doğrulanmış alan adından `MAIL_FROM_ADDRESS` gir, yukarıdaki akışı `delivered@resend.dev` ile çalıştır. Mesaj `sent` olmalı ve `providerMessageId` dolmalı.
 - **Resend webhook:** Resend panelinde `https://<APP_BASE_URL>/webhooks/resend` adresine `email.sent, email.delivered, email.opened, email.bounced, email.complained, email.failed` olaylarını ekle, verilen `whsec_...` değerini `RESEND_WEBHOOK_SECRET`'a yaz. Test mailinden sonra mesaj durumu `delivered` olmalı. `bounced@resend.dev` adresine gönderim, adresi ret listesine eklemeli.
 
