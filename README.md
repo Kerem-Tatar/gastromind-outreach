@@ -59,6 +59,8 @@ panel/                   Admin paneli (Next.js 16 App Router + Tailwind 4)
 
 ## Admin paneli (`panel/`)
 
+> Arayüzde "Mail şablonları" olarak geçen kavram, kodda ve API'de `Campaign` / `/api/campaigns` adını korur.
+
 Next.js (App Router) + Tailwind. Tek kullanıcı: parola ile giriş, imzalı **httpOnly** oturum cookie'si (7 gün).
 
 **Güvenlik modeli:** Tarayıcı backend'e doğrudan bağlanmaz. Panel `/api/*` isteklerini sunucu tarafında oturumu doğrulayıp `ADMIN_API_KEY` ile backend'e iletir; API anahtarı tarayıcıya hiç gitmez. Veri değiştiren isteklerde `Origin` kontrolü (CSRF) yapılır. Render uykudaysa ilk istek ~1 dk sürebilir (70 sn zaman aşımı, okuma isteklerinde 1 yeniden deneme).
@@ -69,7 +71,7 @@ Next.js (App Router) + Tailwind. Tek kullanıcı: parola ile giriş, imzalı **h
 | İşletmeler | Tablo, arama, il/ilçe/kategori/aşama filtresi, sayfalama, CSV içe aktarma, yeni işletme |
 | İşletme detay | Bilgiler (düzenlenebilir), zaman çizelgesi, not/telefon/görüşme ekleme, aşama değiştirme, kampanyadan taslak oluşturma, silme |
 | Onay kuyruğu | Solda taslak düzenleme, sağda footer ve başlıklar dahil gerçek mail önizlemesi; onayla/reddet, seçerek toplu onay; onaylılar sekmesinde tek tek veya toplu gönderim |
-| Kampanyalar | Hedef (il/ilçe/kategori), şablon editörü, değişken ekleme butonları, gerçek işletme verisiyle canlı önizleme, bilinmeyen değişken uyarısı, taslak üretme |
+| Mail şablonları | Hedef (il/ilçe/kategori), şablon editörü, değişken ekleme butonları, gerçek işletme verisiyle canlı önizleme, bilinmeyen değişken uyarısı, hedefteki işletmeler listesi (taslak uygunluk durumlarıyla), taslak üretme |
 | Ayarlar | Günlük limit, gönderim saatleri, hatırlatma ayarları, gönderen bilgileri, randevu linki; ret listesi görüntüleme, elle ekleme ve İYS CSV içe aktarma |
 
 ### Kurulum

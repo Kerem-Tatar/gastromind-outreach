@@ -17,7 +17,7 @@ import { Suppression } from '../models/Suppression.js';
 // Kampanya hedefindeki (veya verilen) işletmeler için ilk mail taslaklarını üretir.
 export async function generateInitialDrafts(campaignId, { businessIds } = {}) {
   const campaign = await getCampaign(campaignId);
-  if (!campaign.isActive) throw badRequest('Kampanya aktif değil.');
+  if (!campaign.isActive) throw badRequest('Mail şablonu aktif değil.');
   assertValidTemplate(campaign.initialSubject, 'Konu');
   assertValidTemplate(campaign.initialBody, 'Metin');
 

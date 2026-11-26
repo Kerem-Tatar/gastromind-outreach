@@ -45,7 +45,7 @@ export const SUPPRESSION_REASON_LABEL = {
 };
 
 export const SKIP_REASON_LABEL = {
-  do_not_contact: 'iletişim kurulmayacak', no_email: 'e-posta yok', suppressed: 'ret listesinde', already_has_message: 'bu kampanyada zaten mesajı var',
+  do_not_contact: 'iletişim kurulmayacak', no_email: 'e-posta yok', suppressed: 'ret listesinde', already_has_message: 'bu şablonla zaten mesajı var',
 };
 
 export function formatDate(value) {

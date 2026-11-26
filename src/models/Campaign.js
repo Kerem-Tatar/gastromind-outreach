@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 
 const campaignSchema = new Schema(
   {
-    name: { type: String, required: [true, 'Kampanya adı zorunludur.'], trim: true },
+    name: { type: String, required: [true, 'Şablon adı zorunludur.'], trim: true },
     target: {
       provinces: { type: [String], default: [] },
       districts: { type: [String], default: [] },

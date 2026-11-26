@@ -8,7 +8,7 @@ const LINKS = [
   { href: '/funnel', label: 'Huni' },
   { href: '/businesses', label: 'İşletmeler' },
   { href: '/queue', label: 'Onay kuyruğu' },
-  { href: '/campaigns', label: 'Kampanyalar' },
+  { href: '/campaigns', label: 'Mail şablonları' },
   { href: '/settings', label: 'Ayarlar' },
 ];
 
