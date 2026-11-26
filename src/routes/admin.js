@@ -8,6 +8,9 @@ import * as sender from '../services/sendService.js';
 import * as suppressions from '../services/suppressionService.js';
 import { importBusinesses, importIysRejections } from '../services/importService.js';
 import { funnelSummary } from '../services/funnelService.js';
+import { searchPlaces, importPlaces } from '../services/placesSearchService.js';
+import { getUsage } from '../services/placesUsageService.js';
+import { lookupBusinessEmail } from '../services/emailLookupService.js';
 import { getSettings, updateSettings } from '../services/settingsService.js';
 import { listProvinces, listDistricts, locationsSource } from '../services/locations.js';
 import { badRequest, notFound } from '../services/errors.js';
@@ -43,6 +46,10 @@ export function adminRouter(deps = {}) {
     res.status(204).end();
   }));
   r.post('/businesses/:id/stage', asyncHandler(async (req, res) => res.json(await businesses.changeStage(req.params.id, req.body?.stage, req.body?.note))));
+  r.post('/businesses/:id/find-email', asyncHandler(async (req, res) => {
+    const { business, ...result } = await lookupBusinessEmail(req.params.id);
+    res.json({ ...result, contactChannel: business.contactChannel });
+  }));
   r.post('/businesses/:id/activities', asyncHandler(async (req, res) => res.status(201).json(await businesses.addManualActivity(req.params.id, req.body ?? {}))));
 
   // Kampanyalar
@@ -86,6 +93,11 @@ export function adminRouter(deps = {}) {
     res.status(201).json(suppression);
   }));
   r.post('/suppressions/import-iys', asyncHandler(async (req, res) => res.json(await importIysRejections(csvFromRequest(req)))));
+
+  // Google Places ile işletme bulma (önizleme → seçilenleri ekle)
+  r.get('/places/usage', asyncHandler(async (req, res) => res.json(await getUsage())));
+  r.post('/places/search', asyncHandler(async (req, res) => res.json(await searchPlaces(req.body ?? {}))));
+  r.post('/places/import', asyncHandler(async (req, res) => res.status(201).json(await importPlaces(req.body?.places))));
 
   // Huni ve ayarlar
   r.get('/funnel', asyncHandler(async (req, res) => res.json(await funnelSummary(req.query))));
