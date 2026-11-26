@@ -54,6 +54,7 @@ export function adminRouter(deps = {}) {
     await campaigns.deleteCampaign(req.params.id);
     res.status(204).end();
   }));
+  r.get('/campaigns/:id/audience', asyncHandler(async (req, res) => res.json(await drafts.campaignAudience(req.params.id))));
   r.post('/campaigns/:id/drafts', asyncHandler(async (req, res) => {
     const result = await drafts.generateInitialDrafts(req.params.id, { businessIds: req.body?.businessIds });
     res.status(201).json(result);

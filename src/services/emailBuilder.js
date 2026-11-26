@@ -6,7 +6,8 @@ function escapeHtml(s) {
 }
 
 function linkify(escaped) {
-  return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+  // Uzun linkler (çıkma linki vb.) telefonda taşmasın diye satır içinde kırılabilir.
+  return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="word-break:break-all">$1</a>');
 }
 
 function textToHtml(text) {
@@ -20,7 +21,7 @@ export function buildOutgoingEmail({ message, business, sender, from }) {
   const text = `${message.body.trimEnd()}\n\n${footer}\n`;
   const html =
     `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222">${textToHtml(message.body.trimEnd())}</div>` +
-    `<div style="font-family:Arial,sans-serif;font-size:12px;line-height:1.5;color:#666;margin-top:24px">${textToHtml(footer)}` +
+    `<div style="font-family:Arial,sans-serif;font-size:12px;line-height:1.5;color:#666;margin-top:24px;overflow-wrap:anywhere">${textToHtml(footer)}` +
     `<br><a href="${escapeHtml(unsubscribeUrl(token))}">Listeden çık</a></div>`;
   return {
     from,
