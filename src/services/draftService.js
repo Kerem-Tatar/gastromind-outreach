@@ -11,13 +11,8 @@ import { buildOutgoingEmail } from './emailBuilder.js';
 import { fromHeader } from './mailer.js';
 import { env } from '../config/env.js';
 
-function targetFilter(target) {
-  const filter = {};
-  if (target.provinces?.length) filter['location.province'] = { $in: target.provinces };
-  if (target.districts?.length) filter['location.district'] = { $in: target.districts };
-  if (target.categories?.length) filter.category = { $in: target.categories };
-  return filter;
-}
+import { targetFilter } from './campaignTarget.js';
+import { Suppression } from '../models/Suppression.js';
 
 // Kampanya hedefindeki (veya verilen) işletmeler için ilk mail taslaklarını üretir.
 export async function generateInitialDrafts(campaignId, { businessIds } = {}) {
@@ -59,6 +54,41 @@ export async function generateInitialDrafts(campaignId, { businessIds } = {}) {
     created.push(message);
   }
   return { created, skipped };
+}
+
+const AUDIENCE_LIMIT = 500;
+
+// Kampanya hedefindeki işletmeler ve her birinin taslak üretimine uygunluğu (panelde listelenir).
+// status: ready | already_has_message | no_email | suppressed | do_not_contact | not_new
+export async function campaignAudience(campaignId) {
+  const campaign = await getCampaign(campaignId);
+  const filter = targetFilter(campaign.target);
+  const [businesses, total] = await Promise.all([
+    Business.find(filter).sort({ name: 1 }).limit(AUDIENCE_LIMIT)
+      .select('name category location contact.email contact.contactPerson stage'),
+    Business.countDocuments(filter),
+  ]);
+  const ids = businesses.map((b) => b._id);
+  const emails = businesses.map((b) => b.contact?.email).filter(Boolean);
+  const [suppressed, existing] = await Promise.all([
+    Suppression.find({ email: { $in: emails } }).select('email'),
+    Message.find({ campaign: campaign._id, kind: 'initial', status: { $ne: 'rejected' }, business: { $in: ids } }).select('business status'),
+  ]);
+  const suppressedSet = new Set(suppressed.map((s) => s.email));
+  const messageByBusiness = new Map(existing.map((m) => [String(m.business), m.status]));
+
+  const items = businesses.map((b) => {
+    let status = 'ready';
+    if (b.stage === 'do_not_contact') status = 'do_not_contact';
+    else if (messageByBusiness.has(String(b._id))) status = 'already_has_message';
+    else if (!b.contact?.email) status = 'no_email';
+    else if (suppressedSet.has(b.contact.email)) status = 'suppressed';
+    else if (b.stage !== 'new') status = 'not_new';
+    return { ...b.toObject(), status, messageStatus: messageByBusiness.get(String(b._id)) ?? null };
+  });
+  const counts = {};
+  for (const item of items) counts[item.status] = (counts[item.status] ?? 0) + 1;
+  return { total, truncated: total > items.length, counts, items };
 }
 
 async function skipReason(business, campaignId) {
