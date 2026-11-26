@@ -46,6 +46,8 @@ export const env = {
   get senderAddress() { return read('SENDER_ADDRESS'); },
   get bookingUrl() { return read('BOOKING_URL'); },
   get jobSecret() { return read('JOB_SECRET'); },
+  get googlePlacesApiKey() { return read('GOOGLE_PLACES_API_KEY'); },
+  get googlePlacesMonthlyCallLimit() { const n = Number(read('GOOGLE_PLACES_MONTHLY_CALL_LIMIT')); return Number.isFinite(n) && n >= 0 && read('GOOGLE_PLACES_MONTHLY_CALL_LIMIT') !== '' ? n : null; },
 };
 
 export function secretValues() {

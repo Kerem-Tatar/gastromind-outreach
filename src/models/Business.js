@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
-import { CATEGORIES, EMAIL_SOURCES, BUSINESS_SOURCES, STAGES } from '../config/constants.js';
+import { CATEGORIES, EMAIL_SOURCES, BUSINESS_SOURCES, STAGES, CONTACT_CHANNELS } from '../config/constants.js';
 import { resolveLocation } from '../services/locations.js';
 
 const { Schema } = mongoose;
@@ -39,6 +39,11 @@ const businessSchema = new Schema(
     location: { type: locationSchema, required: true },
     contact: { type: contactSchema, default: () => ({}) },
     emailSource: { type: String, enum: EMAIL_SOURCES },
+    // E-postanın bulunduğu sayfa (ör. web sitesinin iletişim sayfası) — Kural 7 kanıtı.
+    emailSourceUrl: { type: String, trim: true },
+    // Önerilen iletişim kanalı: e-posta bulunamazsa instagram/phone (sistem sadece e-posta gönderir).
+    contactChannel: { type: String, enum: CONTACT_CHANNELS, default: 'email' },
+    googleMapsUrl: { type: String, trim: true },
     googlePlaceId: { type: String, unique: true, sparse: true },
     rating: Number,
     reviewCount: Number,

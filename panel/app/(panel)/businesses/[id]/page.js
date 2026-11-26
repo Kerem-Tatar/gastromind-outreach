@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../../lib/api-client.js';
-import { STAGES, CATEGORY_LABEL, ACTIVITY_LABEL, SKIP_REASON_LABEL, EMAIL_SOURCES, STAGE_LABEL, formatDate } from '../../../../lib/labels.js';
+import { STAGES, CATEGORY_LABEL, ACTIVITY_LABEL, SKIP_REASON_LABEL, EMAIL_SOURCES, STAGE_LABEL, CONTACT_CHANNEL_LABEL, SOURCE_LABEL, formatDate } from '../../../../lib/labels.js';
 import BusinessForm from '../../../../components/BusinessForm.js';
 import { Notice, Loading, Empty, StageBadge, StatusBadge } from '../../../../components/ui.js';
 
@@ -73,6 +73,19 @@ export default function BusinessDetailPage() {
     }
   }
 
+  async function findEmail() {
+    setNotice({ type: 'ok', text: 'Web sitesinde e-posta aranıyor…' });
+    try {
+      const r = await api(`/businesses/${id}/find-email`, { method: 'POST' });
+      setNotice(r.status === 'found'
+        ? { type: 'ok', text: `E-posta bulundu: ${r.email}\nKaynak: ${r.sourceUrl}` }
+        : { type: 'error', text: `E-posta bulunamadı: ${r.reason}. İşletme ${CONTACT_CHANNEL_LABEL[r.contactChannel] ?? 'diğer'} kanalına işaretlendi.` });
+      await load();
+    } catch (err) {
+      setNotice({ type: 'error', text: err.message });
+    }
+  }
+
   async function remove() {
     if (!window.confirm(`"${b.name}" silinsin mi? Bekleyen taslakları da silinir. Ret listesi kayıtları korunur.`)) return;
     try {
@@ -109,12 +122,29 @@ export default function BusinessDetailPage() {
                 <Info label="Konum" value={[b.location.neighborhood, b.location.district, b.location.province].filter(Boolean).join(', ')} />
                 <Info label="Adres" value={b.location.address} />
                 <Info label="Yetkili" value={b.contact?.contactPerson} />
-                <Info label="E-posta" value={b.contact?.email ? `${b.contact.email}${emailSourceLabel ? ` (${emailSourceLabel})` : ''}` : null} />
+                <div>
+                  <dt className="text-xs text-gray-500">E-posta</dt>
+                  <dd>
+                    {b.contact?.email ? `${b.contact.email}${emailSourceLabel ? ` (${emailSourceLabel})` : ''}` : '—'}
+                    {b.emailSourceUrl && <a href={b.emailSourceUrl} target="_blank" rel="noreferrer" className="ml-1 text-xs text-brand hover:underline">kaynak</a>}
+                    {!b.contact?.email && b.contact?.website && !locked && (
+                      <button type="button" onClick={findEmail} className="ml-2 text-xs text-brand hover:underline">Web sitesinden bul</button>
+                    )}
+                  </dd>
+                </div>
+                <Info label="Önerilen kanal" value={CONTACT_CHANNEL_LABEL[b.contactChannel ?? 'email']} />
                 <Info label="Telefon" value={b.contact?.phone} />
-                <Info label="Web sitesi" value={b.contact?.website} />
+                <div>
+                  <dt className="text-xs text-gray-500">Web sitesi</dt>
+                  <dd>{b.contact?.website ? <a href={b.contact.website} target="_blank" rel="noreferrer" className="text-brand hover:underline">{b.contact.website}</a> : '—'}</dd>
+                </div>
                 <Info label="Instagram" value={b.contact?.instagram} />
                 <Info label="Puan" value={b.rating ? `${b.rating} (${b.reviewCount ?? 0} yorum)` : null} />
                 <Info label="Öncelik" value={b.priority} />
+                <div>
+                  <dt className="text-xs text-gray-500">Kaynak</dt>
+                  <dd>{SOURCE_LABEL[b.source] ?? b.source}{b.googleMapsUrl && <a href={b.googleMapsUrl} target="_blank" rel="noreferrer" className="ml-1 text-xs text-brand hover:underline">Haritada aç</a>}</dd>
+                </div>
                 <Info label="Etiketler" value={b.tags?.join(', ')} />
                 <Info label="Son temas" value={formatDate(b.lastContactedAt)} />
                 {b.notes && <div className="sm:col-span-2"><dt className="text-xs text-gray-500">Notlar</dt><dd className="whitespace-pre-line">{b.notes}</dd></div>}

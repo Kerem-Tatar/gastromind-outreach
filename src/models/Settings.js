@@ -24,6 +24,8 @@ const settingsSchema = new Schema(
       address: { type: String, default: '' },
     },
     bookingUrl: { type: String, default: '' },
+    // Google Places aylık çağrı üst sınırı (0 = arama kapalı). Varsayılan .env veya 900.
+    placesMonthlyLimit: { type: Number, min: 0, max: 20000 },
   },
   { timestamps: true },
 );

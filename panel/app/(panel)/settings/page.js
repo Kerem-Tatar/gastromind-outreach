@@ -18,6 +18,7 @@ export default function SettingsPage() {
       maxFollowups: s.maxFollowups,
       sender: { fullName: '', companyName: '', email: '', phone: '', address: '', ...s.sender },
       bookingUrl: s.bookingUrl ?? '',
+      placesMonthlyLimit: s.placesMonthlyLimit ?? '',
     })).catch((err) => setNotice({ type: 'error', text: err.message }));
   }, []);
 
@@ -32,7 +33,13 @@ export default function SettingsPage() {
     try {
       await api('/settings', {
         method: 'PATCH',
-        json: { ...form, dailyLimit: Number(form.dailyLimit), followupAfterDays: Number(form.followupAfterDays), maxFollowups: Number(form.maxFollowups) },
+        json: {
+          ...form,
+          dailyLimit: Number(form.dailyLimit),
+          followupAfterDays: Number(form.followupAfterDays),
+          maxFollowups: Number(form.maxFollowups),
+          placesMonthlyLimit: form.placesMonthlyLimit === '' ? undefined : Number(form.placesMonthlyLimit),
+        },
       });
       setNotice({ type: 'ok', text: 'Ayarlar kaydedildi.' });
     } catch (err) {
@@ -80,6 +87,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <p className="text-xs text-gray-500">Hatırlatma taslakları Faz 5'te otomatik üretilecek.</p>
+          <PlacesLimit value={form.placesMonthlyLimit} onChange={(v) => setForm({ ...form, placesMonthlyLimit: v })} />
         </section>
 
         <section className="card space-y-3">
@@ -102,6 +110,31 @@ export default function SettingsPage() {
 
       <Suppressions />
     </div>
+  );
+}
+
+function PlacesLimit({ value, onChange }) {
+  const [usage, setUsage] = useState(null);
+  useEffect(() => { api('/places/usage').then(setUsage).catch(() => {}); }, []);
+  const n = Number(value);
+  return (
+    <>
+      <h2 className="h2 pt-2">Google Places (işletme bulma)</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="s-places">Aylık arama çağrısı sınırı</label>
+          <input id="s-places" type="number" min={0} max={20000} className="input" placeholder={usage ? String(usage.limit) : '900'}
+            value={value} onChange={(e) => onChange(e.target.value)} />
+        </div>
+        <div className="text-xs text-gray-500 sm:pt-5">
+          {usage && <>Bu ay kullanılan: <strong>{usage.count}</strong> / {usage.limit}. </>}
+          Her sonuç sayfası (en fazla 20 işletme) 1 çağrıdır. 0 yazarsanız arama kapanır.
+        </div>
+      </div>
+      {value !== '' && n > 1000 && (
+        <p className="text-xs text-accent">Google'ın ücretsiz kotası ayda 1.000 çağrı. Üzerindeki her 1.000 çağrı yaklaşık 35 $ tutar.</p>
+      )}
+    </>
   );
 }
 

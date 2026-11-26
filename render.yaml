@@ -38,3 +38,7 @@ services:
         sync: false
       - key: JOB_SECRET
         generateValue: true
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
+      - key: GOOGLE_PLACES_MONTHLY_CALL_LIMIT
+        value: "900"

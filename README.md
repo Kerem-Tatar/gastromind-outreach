@@ -10,7 +10,7 @@ Proje şartnamesi: [`CLAUDE.md`](CLAUDE.md).
 |---|---|---|
 | 1 | Backend çekirdeği (modeller, admin API, çıkma linki, Resend webhook, CSV, testler) | ✅ |
 | 2 | Admin paneli (Next.js, `panel/`) | ✅ |
-| 3 | Google Places ile lead bulma | ⏳ |
+| 3 | Google Places ile lead bulma ("İşletme bul") | ✅ |
 | 4 | AI ile kişiselleştirme | ⏳ |
 | 5 | Takip otomasyonu (GitHub Actions, Cal.com) | ⏳ |
 
@@ -98,6 +98,31 @@ npm test                                       # oturum/parola/CSRF testleri
 2. Environment Variables: yukarıdaki dört değişken (`BACKEND_URL` = Render adresi).
 3. Deploy. Panel `noindex` başlığıyla yayınlanır.
 
+## İşletme bulma (Google Places) — Faz 3
+
+Panelde **İşletme bul**: il, ilçe(ler), kategori, minimum puan, minimum yorum sayısı, ilçe başına sonuç sayısı (20/40/60) ve isteğe bağlı mahalleler.
+
+1. Her ilçe (tek ilçe seçiliyse ve mahalle yazıldıysa her mahalle) için ayrı Text Search sorgusu yapılır, ör. `kafe Kadıköy İstanbul`. Büyük ilçelerde Google'ın 60 sonuç sınırına takılmamak için mahalle bazında arayın.
+2. Sonuçlar **kaydedilmeden önizlenir**. Kalıcı olarak kapanmış işletmeler elenir; Google'ın başka ilçede gösterdikleri "İlçe dışı" olarak işaretlenir ve varsayılan olarak seçilmez. `googlePlaceId` ile daha önce eklenenler "Zaten ekli" görünür ve tekrar eklenemez.
+3. Seçilenler eklenince (isteğe bağlı) web sitelerinden iletişim e-postası aranır.
+
+### Maliyet koruması
+- Puan, yorum sayısı, web sitesi ve telefon alanları Google'ın **Text Search Enterprise** SKU'suna girer: **ayda 1.000 ücretsiz istek**, sonrası 1.000 istek başına yaklaşık 35 $ (Kasım 2026 fiyat listesi). Şartnamede geçen "Pro, 5.000 ücretsiz" bu alanları içermez.
+- Her sonuç sayfası (en fazla 20 işletme) 1 istektir. Sayaç aylık tutulur (`placesusages` koleksiyonu, Europe/Istanbul ayı).
+- Varsayılan aylık sınır **900** (`GOOGLE_PLACES_MONTHLY_CALL_LIMIT` veya Ayarlar sayfası). %80'de uyarı gösterilir, sınıra gelince Google'a istek atılmadan arama durur.
+- Field mask ile sadece gereken alanlar istenir (yorum metni, fotoğraf, çalışma saatleri istenmez).
+- Google Cloud'da ayrıca günlük kota sınırı ve bütçe uyarısı kurulmalıdır.
+
+### Web sitesinden e-posta bulma (Kural 7)
+- Sadece işletmenin kendi sitesindeki `/`, `/iletisim`, `/contact`, `/hakkimizda` sayfaları; sayfa başına tek istek, 8 sn zaman aşımı, en fazla 1 MB.
+- Önce `robots.txt` okunur ve uyulur; okunamazsa site taranmaz. Açık User-Agent: `GastromindOutreachBot/1.0 (+https://gastro-mind.com; iletisim: info@gastro-mind.com)`.
+- Başka siteye yönlenen sayfalardaki adresler kullanılmaz. Sitenin kendi alan adındaki adres tercih edilir; `noreply@`, örnek/altyapı adresleri elenir. **Adres tahmini yapılmaz.**
+- Bulunan adres `emailSource: website` ve `emailSourceUrl` (bulunduğu sayfa) ile kaydedilir. Bulunamazsa işletme Telefon/Instagram kanalına işaretlenir (`contactChannel`).
+- İşletme detayında "Web sitesinden bul" ile tek tek de çalıştırılabilir.
+
+### Anahtar gelince doğrulama
+Render'a `GOOGLE_PLACES_API_KEY` ekleyin, panelde **İşletme bul → İstanbul / Kadıköy / Kafe / puan ≥ 4.2 / ilçe başına 40** ile arayın: 20'den fazla sonuç gelmeli ve sayaç 2 artmalı.
+
 ## Değişmez kurallar
 
 Bunlar kodda zorunlu kontrol olarak uygulanır; ayar, şablon veya API isteğiyle kapatılamaz. Her biri için `tests/` altında test vardır.
@@ -143,7 +168,12 @@ Tüm `/api/*` uçları `x-api-key` başlığı ister. Hata gövdesi: `{ "error":
 | GET/POST | `/api/suppressions` | Ret listesi / elle ekle |
 | POST | `/api/suppressions/import-iys` | İYS ret CSV'si |
 | GET | `/api/funnel?province=` | Huni özeti |
-| GET/PATCH | `/api/settings` | Limitler, gönderim saatleri, gönderen bilgileri |
+| GET/PATCH | `/api/settings` | Limitler, gönderim saatleri, gönderen bilgileri, Google Places aylık sınırı |
+| GET | `/api/places/usage` | Bu ayın Google Places çağrı sayısı ve sınırı |
+| POST | `/api/places/search` | `{ province, districts[], category, keyword?, minRating, minReviews, maxPages, neighborhoods[] }` → önizleme (kaydetmez) |
+| POST | `/api/places/import` | `{ places: [...] }` önizlemeden seçilenleri ekler |
+| POST | `/api/businesses/:id/find-email` | Web sitesinden iletişim e-postası bulur |
+| GET | `/api/campaigns/:id/audience` | Mail şablonunun hedefindeki işletmeler ve taslak uygunlukları |
 
 Herkese açık: `GET /health`, `GET|POST /unsubscribe/:token`, `POST /webhooks/resend`.
 

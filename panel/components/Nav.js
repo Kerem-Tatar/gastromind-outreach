@@ -7,6 +7,7 @@ import { logout } from '../app/login/actions.js';
 const LINKS = [
   { href: '/funnel', label: 'Huni' },
   { href: '/businesses', label: 'İşletmeler' },
+  { href: '/discover', label: 'İşletme bul' },
   { href: '/queue', label: 'Onay kuyruğu' },
   { href: '/campaigns', label: 'Mail şablonları' },
   { href: '/settings', label: 'Ayarlar' },

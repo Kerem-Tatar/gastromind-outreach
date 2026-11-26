@@ -8,8 +8,8 @@ import { addSuppression, escapeRegex } from './suppressionService.js';
 
 // API üzerinden düzenlenebilen alanlar. stage ve unsubscribeToken burada değiştirilemez.
 const EDITABLE_FIELDS = [
-  'name', 'category', 'location', 'contact', 'emailSource', 'googlePlaceId', 'rating', 'reviewCount',
-  'priceLevel', 'source', 'priority', 'tags', 'notes', 'nextActionAt',
+  'name', 'category', 'location', 'contact', 'emailSource', 'emailSourceUrl', 'contactChannel', 'googlePlaceId',
+  'googleMapsUrl', 'rating', 'reviewCount', 'priceLevel', 'source', 'priority', 'tags', 'notes', 'nextActionAt',
 ];
 
 function pick(obj, keys) {
@@ -37,6 +37,7 @@ export async function updateBusiness(id, patch) {
   const business = await getBusiness(id);
   if (patch.stage !== undefined) throw badRequest('Aşama değişikliği için /stage uç noktasını kullanın.');
   const fields = pick(patch, EDITABLE_FIELDS);
+  const previousEmail = business.contact?.email ?? '';
   for (const [k, v] of Object.entries(fields)) {
     if (['location', 'contact'].includes(k) && v && typeof v === 'object') {
       for (const [sub, subValue] of Object.entries(v)) business.set(`${k}.${sub}`, subValue);
@@ -44,6 +45,11 @@ export async function updateBusiness(id, patch) {
       business.set(k, v);
     }
   }
+  // E-posta elle değiştirildiyse eski kaynak linki artık bu adresin kanıtı değildir.
+  if ((business.contact?.email ?? '') !== previousEmail && fields.emailSourceUrl === undefined) {
+    business.emailSourceUrl = undefined;
+  }
+  if (business.contact?.email) business.contactChannel = 'email';
   await business.save();
   return business;
 }
@@ -55,8 +61,12 @@ export async function deleteBusiness(id) {
   await business.deleteOne();
 }
 
-export async function listBusinesses({ province, district, category, stage, q, page = 1, limit = 50 } = {}) {
+export async function listBusinesses({ province, district, category, stage, q, source, contactChannel, hasEmail, page = 1, limit = 50 } = {}) {
   const filter = {};
+  if (source) filter.source = source;
+  if (contactChannel) filter.contactChannel = contactChannel;
+  if (hasEmail === 'yes') filter['contact.email'] = { $exists: true, $nin: [null, ''] };
+  if (hasEmail === 'no') filter['contact.email'] = { $in: [null, ''] };
   if (province) filter['location.province'] = province;
   if (district) filter['location.district'] = district;
   if (category) filter.category = category;

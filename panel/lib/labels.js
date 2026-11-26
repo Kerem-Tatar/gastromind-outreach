@@ -52,3 +52,6 @@ export function formatDate(value) {
   if (!value) return '—';
   return new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 }
+
+export const CONTACT_CHANNEL_LABEL = { email: 'E-posta', instagram: 'Instagram', phone: 'Telefon' };
+export const SOURCE_LABEL = { manual: 'Elle', google_places: 'Google', referral: 'Referans', inbound: 'Gelen' };

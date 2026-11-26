@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, qs } from '../../../lib/api-client.js';
-import { CATEGORY_LABEL, STAGES, formatDate } from '../../../lib/labels.js';
+import { CATEGORY_LABEL, STAGES, CONTACT_CHANNEL_LABEL, formatDate } from '../../../lib/labels.js';
 import LocationFilters from '../../../components/LocationFilters.js';
 import { Notice, Loading, Empty, PageHeader, StageBadge } from '../../../components/ui.js';
 
 const PAGE_SIZE = 50;
 
 export default function BusinessesPage() {
-  const [filters, setFilters] = useState({ province: '', district: '', category: '', stage: '', q: '' });
+  const [filters, setFilters] = useState({ province: '', district: '', category: '', stage: '', q: '', source: '', hasEmail: '' });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [data, setData] = useState(null);
@@ -27,6 +27,13 @@ export default function BusinessesPage() {
   }, [filters, page]);
 
   useEffect(() => { load(); }, [load]);
+  // "İşletme bul" sayfasından gelen ?source=google_places gibi filtreler
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const fromUrl = {};
+    for (const k of ['source', 'hasEmail', 'stage', 'province']) if (sp.get(k)) fromUrl[k] = sp.get(k);
+    if (Object.keys(fromUrl).length) setFilters((f) => ({ ...f, ...fromUrl }));
+  }, []);
   useEffect(() => {
     const t = setTimeout(() => { setPage(1); setFilters((f) => (f.q === search ? f : { ...f, q: search })); }, 300);
     return () => clearTimeout(t);
@@ -71,6 +78,22 @@ export default function BusinessesPage() {
               {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
+          <div className="w-40">
+            <label className="label" htmlFor="f-hasEmail">E-posta</label>
+            <select id="f-hasEmail" className="input" value={filters.hasEmail} onChange={(e) => { setPage(1); setFilters({ ...filters, hasEmail: e.target.value }); }}>
+              <option value="">Hepsi</option>
+              <option value="yes">E-postası olan</option>
+              <option value="no">E-postası olmayan</option>
+            </select>
+          </div>
+          <div className="w-36">
+            <label className="label" htmlFor="f-source">Kaynak</label>
+            <select id="f-source" className="input" value={filters.source} onChange={(e) => { setPage(1); setFilters({ ...filters, source: e.target.value }); }}>
+              <option value="">Hepsi</option>
+              <option value="google_places">Google</option>
+              <option value="manual">Elle / CSV</option>
+            </select>
+          </div>
           <div className="min-w-48 flex-1">
             <label className="label" htmlFor="f-q">Ara</label>
             <input id="f-q" className="input" placeholder="Ad, e-posta veya etiket" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -103,7 +126,7 @@ export default function BusinessesPage() {
                   <td className="px-3 py-2"><Link href={`/businesses/${b._id}`} className="font-medium hover:text-brand">{b.name}</Link></td>
                   <td className="px-3 py-2 text-gray-600">{b.location.district}, {b.location.province}</td>
                   <td className="px-3 py-2 text-gray-600">{CATEGORY_LABEL[b.category]}</td>
-                  <td className="px-3 py-2 text-gray-600">{b.contact?.email || <span className="text-amber-700">—</span>}</td>
+                  <td className="px-3 py-2 text-gray-600">{b.contact?.email || <span className="text-xs text-amber-700">Yok{b.contactChannel && b.contactChannel !== 'email' ? ` · ${CONTACT_CHANNEL_LABEL[b.contactChannel]} ile ulaşın` : ''}</span>}</td>
                   <td className="px-3 py-2"><StageBadge stage={b.stage} /></td>
                   <td className="px-3 py-2 text-gray-600">{formatDate(b.lastContactedAt)}</td>
                 </tr>

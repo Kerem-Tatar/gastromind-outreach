@@ -1,7 +1,7 @@
 import { Settings } from '../models/Settings.js';
 import { env } from '../config/env.js';
 
-const EDITABLE = ['dailyLimit', 'sendWindow', 'followupAfterDays', 'maxFollowups', 'sender', 'bookingUrl'];
+const EDITABLE = ['dailyLimit', 'sendWindow', 'followupAfterDays', 'maxFollowups', 'sender', 'bookingUrl', 'placesMonthlyLimit'];
 
 export async function getSettings() {
   const existing = await Settings.findOne({ key: 'global' });
