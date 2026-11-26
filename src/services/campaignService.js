@@ -38,7 +38,7 @@ export async function createCampaign(input) {
 export async function getCampaign(id) {
   assertObjectId(id);
   const campaign = await Campaign.findById(id);
-  if (!campaign) throw notFound('Kampanya bulunamadı.');
+  if (!campaign) throw notFound('Mail şablonu bulunamadı.');
   return campaign;
 }
 

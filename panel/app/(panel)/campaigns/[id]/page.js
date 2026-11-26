@@ -117,7 +117,7 @@ export default function CampaignEditorPage() {
         const updated = await api(`/campaigns/${id}`, { method: 'PATCH', json: payload() });
         setForm({ ...EMPTY, ...updated, followupSubject: updated.followupSubject ?? '', followupBody: updated.followupBody ?? '' });
         setSavedTarget(JSON.stringify(updated.target));
-        setNotice({ type: 'ok', text: 'Kampanya kaydedildi.' });
+        setNotice({ type: 'ok', text: 'Şablon kaydedildi.' });
         await loadAudience();
       }
     } catch (err) {
@@ -132,7 +132,7 @@ export default function CampaignEditorPage() {
 
   async function generate() {
     if (targetDirty) {
-      setNotice({ type: 'error', text: 'Hedefi değiştirdiniz; taslak üretmeden önce kampanyayı kaydedin.' });
+      setNotice({ type: 'error', text: 'Hedefi değiştirdiniz; taslak üretmeden önce şablonu kaydedin.' });
       return;
     }
     if (!window.confirm(`${readyCount} işletme için taslak üretilsin mi? Taslaklar onay kuyruğuna düşer, hiçbiri otomatik gönderilmez.`)) return;
@@ -149,7 +149,7 @@ export default function CampaignEditorPage() {
   }
 
   async function remove() {
-    if (!window.confirm('Kampanya silinsin mi? Üretilmiş mesajlar silinmez.')) return;
+    if (!window.confirm('Şablon silinsin mi? Üretilmiş mesajlar silinmez.')) return;
     try {
       await api(`/campaigns/${id}`, { method: 'DELETE' });
       router.push('/campaigns');
@@ -161,8 +161,8 @@ export default function CampaignEditorPage() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Link href="/campaigns" className="text-sm text-gray-500 hover:text-brand">← Kampanyalar</Link>
-        <h1 className="h1 flex-1">{isNew ? 'Yeni kampanya' : form.name}</h1>
+        <Link href="/campaigns" className="text-sm text-gray-500 hover:text-brand">← Mail şablonları</Link>
+        <h1 className="h1 flex-1">{isNew ? 'Yeni şablon' : form.name}</h1>
         {!isNew && <Link href="/queue" className="btn-secondary">Onay kuyruğu</Link>}
         {!isNew && <button type="button" className="btn-primary" onClick={generate} disabled={!form.isActive || readyCount === 0}>Taslak üret ({readyCount})</button>}
       </div>
@@ -172,7 +172,7 @@ export default function CampaignEditorPage() {
         <div className="space-y-4">
           <section className="card space-y-3">
             <div>
-              <label className="label" htmlFor="c-name">Kampanya adı *</label>
+              <label className="label" htmlFor="c-name">Şablon adı *</label>
               <input id="c-name" className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
             </div>
             <div>
@@ -238,7 +238,7 @@ export default function CampaignEditorPage() {
             {unknown.length > 0 && <p className="rounded-md bg-accent-light px-3 py-2 text-sm text-accent">Bilinmeyen değişken: {unknown.map((u) => `{{${u}}}`).join(', ')} — bu haliyle kaydedilemez.</p>}
             <p className="text-xs text-gray-500">Yasal footer (gönderen bilgisi ve çıkma linki) her maile otomatik eklenir.</p>
             <div className="flex flex-wrap gap-2">
-              <button type="submit" className="btn-primary" disabled={saving || unknown.length > 0}>{saving ? 'Kaydediliyor…' : isNew ? 'Kampanyayı oluştur' : 'Kaydet'}</button>
+              <button type="submit" className="btn-primary" disabled={saving || unknown.length > 0}>{saving ? 'Kaydediliyor…' : isNew ? 'Şablonu oluştur' : 'Kaydet'}</button>
               {!isNew && <button type="button" className="btn-primary" onClick={generate} disabled={!form.isActive || readyCount === 0}>Taslak üret ({readyCount})</button>}
               {!isNew && <button type="button" className="btn-secondary text-accent" onClick={remove}>Sil</button>}
             </div>
@@ -265,7 +265,7 @@ export default function CampaignEditorPage() {
       </form>
 
       {isNew ? (
-        <p className="mt-4 text-sm text-gray-500">Kampanyayı oluşturduktan sonra hedefteki işletmeler burada listelenir.</p>
+        <p className="mt-4 text-sm text-gray-500">Şablonu oluşturduktan sonra hedefteki işletmeler burada listelenir.</p>
       ) : (
         <Audience audience={audience} targetDirty={targetDirty} isActive={form.isActive} />
       )}
@@ -275,7 +275,7 @@ export default function CampaignEditorPage() {
 
 const AUDIENCE_STATUS = {
   ready: { label: 'Taslağa hazır', tone: 'bg-brand-light text-brand' },
-  already_has_message: { label: 'Bu kampanyada mesajı var', tone: 'bg-blue-50 text-blue-700' },
+  already_has_message: { label: 'Bu şablonla mesajı var', tone: 'bg-blue-50 text-blue-700' },
   no_email: { label: 'E-posta yok', tone: 'bg-amber-50 text-amber-700' },
   suppressed: { label: 'Ret listesinde', tone: 'bg-accent-light text-accent' },
   do_not_contact: { label: 'İletişim kurulmayacak', tone: 'bg-accent-light text-accent' },
@@ -291,8 +291,8 @@ function Audience({ audience, targetDirty, isActive }) {
         <h2 className="h2">Hedefteki işletmeler ({audience.total})</h2>
         {summary && <p className="text-xs text-gray-500">{summary}</p>}
       </div>
-      {targetDirty && <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800">Hedefi değiştirdiniz. Liste, kampanyayı kaydedince güncellenir.</p>}
-      {!isActive && <p className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500">Kampanya pasif; taslak üretilemez.</p>}
+      {targetDirty && <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800">Hedefi değiştirdiniz. Liste, şablonu kaydedince güncellenir.</p>}
+      {!isActive && <p className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500">Şablon pasif; taslak üretilemez.</p>}
       {audience.items.length === 0 ? (
         <p className="px-4 py-6 text-center text-sm text-gray-500">Hedefe uyan işletme yok. İşletmeler sayfasından bu il/ilçe/kategoride işletme ekleyin.</p>
       ) : (

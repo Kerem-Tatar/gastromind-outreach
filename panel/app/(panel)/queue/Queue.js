@@ -110,7 +110,7 @@ export default function Queue() {
       <Notice notice={notice} onClose={() => setNotice(null)} />
 
       {!list ? <Loading /> : items.length === 0 ? (
-        <div className="card"><Empty>{status === 'draft' ? 'Onay bekleyen taslak yok. Kampanyalar sayfasından taslak üretebilirsiniz.' : 'Gönderilmeyi bekleyen onaylı mail yok.'}</Empty></div>
+        <div className="card"><Empty>{status === 'draft' ? 'Onay bekleyen taslak yok. Mail şablonları sayfasından taslak üretebilirsiniz.' : 'Gönderilmeyi bekleyen onaylı mail yok.'}</Empty></div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
           <aside className="card max-h-[75vh] overflow-y-auto p-0">

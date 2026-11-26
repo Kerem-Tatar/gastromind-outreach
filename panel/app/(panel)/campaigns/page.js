@@ -14,12 +14,12 @@ export default function CampaignsPage() {
 
   return (
     <div>
-      <PageHeader title="Kampanyalar">
-        <Link href="/campaigns/new" className="btn-primary">Yeni kampanya</Link>
+      <PageHeader title="Mail şablonları">
+        <Link href="/campaigns/new" className="btn-primary">Yeni şablon</Link>
       </PageHeader>
       <Notice notice={notice} onClose={() => setNotice(null)} />
       <div className="card p-0">
-        {!campaigns ? <Loading /> : campaigns.length === 0 ? <Empty>Henüz kampanya yok.</Empty> : (
+        {!campaigns ? <Loading /> : campaigns.length === 0 ? <Empty>Henüz mail şablonu yok.</Empty> : (
           <ul className="divide-y divide-gray-100">
             {campaigns.map((c) => (
               <li key={c._id}>

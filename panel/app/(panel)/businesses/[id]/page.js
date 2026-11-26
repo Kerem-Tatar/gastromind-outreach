@@ -144,9 +144,9 @@ export default function BusinessDetailPage() {
             {!locked && (
               <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-gray-100 pt-3">
                 <div className="min-w-48 flex-1">
-                  <label className="label" htmlFor="d-campaign">Kampanyadan taslak oluştur</label>
+                  <label className="label" htmlFor="d-campaign">Mail şablonundan taslak oluştur</label>
                   <select id="d-campaign" className="input" value={campaignId} onChange={(e) => setCampaignId(e.target.value)}>
-                    <option value="">Kampanya seçin</option>
+                    <option value="">Mail şablonu seçin</option>
                     {campaigns.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </select>
                 </div>
